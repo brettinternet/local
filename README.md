@@ -89,6 +89,12 @@ task certs
 
 Never commit a local CA private key. `mkcert` stores its root key outside this repository. Only leaf certificates belong under `certs/`.
 
+## Connect projects
+
+- [Project setup](docs/project-setup.md) — direct routes, edge passthrough, and host processes
+- [Project practices](docs/practices.md) — identity, ports, data, TLS, exposure, and lifecycle
+- [Migration checklist](docs/migration.md) — move an existing stack without changing behavior
+
 ## Route a host process
 
 `examples/routes.yaml` demonstrates a file-provider route:
