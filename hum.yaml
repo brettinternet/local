@@ -1,0 +1,7 @@
+version: 1
+processes:
+  broker:
+    argv: [task, "broker:serve"]
+    ready:
+      match: "Local broker ready\\."
+      timeout: 2m

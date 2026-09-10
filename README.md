@@ -16,7 +16,7 @@ The repository is safe to publish: machine-specific routes, domains, certificate
 
 - [mise](https://mise.jdx.dev/)
 
-`mise.toml` installs Task, Lima, Colima, the Docker CLI, the Docker Compose plugin, mkcert, and ShellCheck. This matches the repository's supported setup while still allowing an existing Docker Desktop or native Docker daemon.
+`mise.toml` installs Task, Hum, Lefthook, Gitleaks, Prettier, Lima, Colima, the Docker CLI, the Docker Compose plugin, mkcert, and ShellCheck. This matches the repository's supported setup while still allowing an existing Docker Desktop or native Docker daemon.
 
 The default images are Traefik 3.7 and LinuxServer Socket Proxy. Image values can be overridden in `.env`.
 
@@ -31,7 +31,7 @@ task up
 task status
 ```
 
-The equivalent direct commands are `docker compose up --detach --wait` and `docker compose ps`.
+`task up` starts the broker under Hum so it remains supervised. Use `hum status` and `hum logs broker` to inspect the process.
 
 The broker creates a reusable Docker network named `local-broker`. Downstream Compose projects join that network as external consumers.
 
@@ -40,7 +40,7 @@ By default, ports 80 and 443 bind only to `127.0.0.1`. This is deliberate: chang
 Stop it with:
 
 ```sh
-docker compose down
+task down
 ```
 
 The shared network remains in use while downstream containers are attached, so stop those projects before removing the broker network.
@@ -97,8 +97,8 @@ The broker discovers only containers carrying both labels:
 
 ```yaml
 labels:
-  traefik.enable: "true"
-  local.broker.enable: "true"
+    traefik.enable: "true"
+    local.broker.enable: "true"
 ```
 
 All normal Traefik Docker labels still apply. Attach the target container to the shared network and set:

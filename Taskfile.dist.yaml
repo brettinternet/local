@@ -4,13 +4,14 @@ silent: true
 
 tasks:
   init:
-    desc: Create ignored machine settings without overwriting existing files
+    desc: Create ignored machine settings and install Git hooks
     cmds:
       - |
         if [ ! -f .env ]; then
           cp .env.example .env
           echo "Created .env"
         fi
+      - mise exec lefthook -- lefthook install
 
   example-config:
     desc: Copy the ignored route and certificate examples without overwriting them
@@ -48,15 +49,31 @@ tasks:
       - bash -n scripts/generate-cert.sh scripts/smoke.sh
       - shellcheck scripts/generate-cert.sh scripts/smoke.sh
 
-  up:
-    desc: Start the broker and wait for it to become healthy
+  broker:serve:
+    desc: Run the broker in the foreground for Hum
     deps: [validate]
+    cmd: |
+      bash -c '
+        set -eu
+        stop_broker() {
+          trap - EXIT INT TERM
+          docker compose stop
+        }
+        trap stop_broker EXIT INT TERM
+        docker compose up --detach --wait
+        printf "%s\n" "Local broker ready."
+        docker compose logs --follow --no-color
+      '
+
+  up:
+    desc: Start and supervise the broker
     cmds:
-      - docker compose up --detach --wait
+      - mise exec -- hum up --detach
 
   down:
-    desc: Stop the broker
+    desc: Stop the supervised broker
     cmds:
+      - mise exec -- hum down
       - docker compose down
 
   status:
@@ -74,8 +91,15 @@ tasks:
     cmds:
       - ./scripts/smoke.sh
 
+  check:staged:
+    desc: Check staged formatting and secrets
+    aliases: [check-staged]
+    cmd: mise exec lefthook -- lefthook run pre-commit
+
   check:
-    desc: Run static validation and the isolated integration smoke test
+    desc: Run all project checks
     cmds:
       - task: validate
+      - mise exec prettier -- prettier --check .
+      - mise exec gitleaks -- gitleaks git --redact --verbose --no-banner
       - task: smoke

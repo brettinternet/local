@@ -1,9 +1,25 @@
 # Machine-local configuration
 .env
+.env.local
+.env.*.local
 config/*
 !config/.gitkeep
 certs/*
 !certs/.gitkeep
+
+# Tool overrides and worktrees
+/Taskfile.yaml
+/Taskfile.yml
+mise.local.toml
+mise.*.local.toml
+/.worktrees/
+
+# Agent-local configuration
+.claude/settings.local.json
+.opencode/
+CLAUDE.local.md
+GEMINI.local.md
+AGENTS.local.md
 
 # Local runtime and editor files
 .test-runtime/
