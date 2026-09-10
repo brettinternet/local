@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate configuration
+        run: |
+          docker compose config --quiet
+          LOCAL_BROKER_TEST_NETWORK=local-broker-validation \
+            LOCAL_BROKER_TEST_ID=local-broker-validation \
+            docker compose --file tests/fixtures/compose.yaml config --quiet
+          bash -n scripts/generate-cert.sh scripts/smoke.sh
+          shellcheck scripts/generate-cert.sh scripts/smoke.sh
+      - name: Run integration smoke test
+        run: ./scripts/smoke.sh

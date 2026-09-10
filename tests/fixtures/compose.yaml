@@ -1,0 +1,41 @@
+services:
+  direct-backend:
+    image: traefik/whoami:v1.11.0
+    networks: [broker]
+    labels:
+      - traefik.enable=true
+      - local.broker.enable=true
+      - traefik.docker.network=${LOCAL_BROKER_TEST_NETWORK:?}
+      - traefik.http.routers.${LOCAL_BROKER_TEST_ID:?}-direct.rule=Host(`direct-smoke.localhost`)
+      - traefik.http.routers.${LOCAL_BROKER_TEST_ID:?}-direct.entrypoints=websecure
+      - traefik.http.routers.${LOCAL_BROKER_TEST_ID:?}-direct.tls=true
+      - traefik.http.routers.${LOCAL_BROKER_TEST_ID:?}-direct.service=${LOCAL_BROKER_TEST_ID:?}-direct
+      - traefik.http.services.${LOCAL_BROKER_TEST_ID:?}-direct.loadbalancer.server.port=80
+
+  edge:
+    image: traefik:v3.7
+    command:
+      - --log.level=ERROR
+      - --entrypoints.websecure.address=:443
+      - --providers.file.filename=/etc/traefik/edge.yaml
+    volumes:
+      - ./edge.yaml:/etc/traefik/edge.yaml:ro
+    networks: [default, broker]
+    labels:
+      - traefik.enable=true
+      - local.broker.enable=true
+      - traefik.docker.network=${LOCAL_BROKER_TEST_NETWORK:?}
+      - traefik.tcp.routers.${LOCAL_BROKER_TEST_ID:?}-edge.rule=HostSNI(`edge-smoke.localhost`)
+      - traefik.tcp.routers.${LOCAL_BROKER_TEST_ID:?}-edge.entrypoints=websecure
+      - traefik.tcp.routers.${LOCAL_BROKER_TEST_ID:?}-edge.tls.passthrough=true
+      - traefik.tcp.routers.${LOCAL_BROKER_TEST_ID:?}-edge.service=${LOCAL_BROKER_TEST_ID:?}-edge
+      - traefik.tcp.services.${LOCAL_BROKER_TEST_ID:?}-edge.loadbalancer.server.port=443
+
+  edge-backend:
+    image: traefik/whoami:v1.11.0
+    networks: [default]
+
+networks:
+  broker:
+    external: true
+    name: ${LOCAL_BROKER_TEST_NETWORK:?}

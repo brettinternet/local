@@ -14,19 +14,24 @@ The repository is safe to publish: machine-specific routes, domains, certificate
 
 ## Requirements
 
-- Docker with Compose v2
-- `mkcert` only when locally trusted certificates are wanted
+- [mise](https://mise.jdx.dev/)
+
+`mise.toml` installs Task, Lima, Colima, the Docker CLI, the Docker Compose plugin, mkcert, and ShellCheck. This matches the repository's supported setup while still allowing an existing Docker Desktop or native Docker daemon.
 
 The default images are Traefik 3.7 and LinuxServer Socket Proxy. Image values can be overridden in `.env`.
 
 ## Start the broker
 
 ```sh
-cp .env.example .env
-docker compose config --quiet
-docker compose up --detach
-docker compose ps
+mise trust
+mise install
+task init
+task docker:start # only when a Docker daemon is not already running
+task up
+task status
 ```
+
+The equivalent direct commands are `docker compose up --detach --wait` and `docker compose ps`.
 
 The broker creates a reusable Docker network named `local-broker`. Downstream Compose projects join that network as external consumers.
 
@@ -51,11 +56,14 @@ The following paths are ignored:
 Start from the tracked examples:
 
 ```sh
-cp examples/routes.yaml config/routes.yaml
-cp examples/domains.txt certs/domains.txt
+task example-config
 ```
 
-Replace every `example.test` name before use. `example.test` is reserved for documentation and will not provide a working project URL without matching local resolution.
+Replace every `example.test` name before use. `example.test` is reserved for documentation and will not provide a working project URL without matching local resolution. Then generate the ignored leaf certificate:
+
+```sh
+task certs
+```
 
 Never commit a local CA private key. `mkcert` keeps its root key outside this repository; only leaf certificates belong under `certs/`.
 
@@ -111,10 +119,20 @@ Router and service names are global within this broker. Prefix them with a proje
 
 Do not publish socket-proxy port 2375 or attach it to the shared ingress network.
 
-## Diagnostics
+## Validation and diagnostics
+
+Run the isolated integration test without disturbing a broker already using ports 80/443:
 
 ```sh
-docker compose ps
+task check
+```
+
+It starts a temporary broker on Docker-assigned loopback ports and verifies direct HTTPS discovery, TLS passthrough through a downstream edge, HTTP redirection, healthchecks, and cleanup.
+
+Operational diagnostics:
+
+```sh
+task status
 docker compose logs --tail 100 traefik
 docker compose logs --tail 100 socket-proxy
 docker network inspect local-broker

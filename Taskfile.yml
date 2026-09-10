@@ -1,0 +1,81 @@
+version: "3"
+
+silent: true
+
+tasks:
+  init:
+    desc: Create ignored machine settings without overwriting existing files
+    cmds:
+      - |
+        if [ ! -f .env ]; then
+          cp .env.example .env
+          echo "Created .env"
+        fi
+
+  example-config:
+    desc: Copy the ignored route and certificate examples without overwriting them
+    cmds:
+      - |
+        if [ ! -f config/routes.yaml ]; then
+          cp examples/routes.yaml config/routes.yaml
+          echo "Created config/routes.yaml; replace the example names before starting"
+        fi
+        if [ ! -f certs/domains.txt ]; then
+          cp examples/domains.txt certs/domains.txt
+          echo "Created certs/domains.txt; replace the example names before generating certificates"
+        fi
+
+  docker:start:
+    desc: Start the mise-managed Colima Docker runtime
+    cmds:
+      - colima start
+    status:
+      - docker info >/dev/null 2>&1
+
+  certs:
+    desc: Generate an ignored mkcert leaf certificate from certs/domains.txt
+    cmds:
+      - ./scripts/generate-cert.sh
+
+  validate:
+    desc: Validate Compose and shell configuration without starting containers
+    cmds:
+      - docker compose config --quiet
+      - >-
+        LOCAL_BROKER_TEST_NETWORK=local-broker-validation
+        LOCAL_BROKER_TEST_ID=local-broker-validation
+        docker compose --file tests/fixtures/compose.yaml config --quiet
+      - bash -n scripts/generate-cert.sh scripts/smoke.sh
+      - shellcheck scripts/generate-cert.sh scripts/smoke.sh
+
+  up:
+    desc: Start the broker and wait for it to become healthy
+    deps: [validate]
+    cmds:
+      - docker compose up --detach --wait
+
+  down:
+    desc: Stop the broker
+    cmds:
+      - docker compose down
+
+  status:
+    desc: Show broker container state
+    cmds:
+      - docker compose ps
+
+  logs:
+    desc: Follow broker logs
+    cmds:
+      - docker compose logs --follow traefik socket-proxy
+
+  smoke:
+    desc: Exercise direct HTTPS discovery and TLS passthrough in an isolated broker
+    cmds:
+      - ./scripts/smoke.sh
+
+  check:
+    desc: Run static validation and the isolated integration smoke test
+    cmds:
+      - task: validate
+      - task: smoke

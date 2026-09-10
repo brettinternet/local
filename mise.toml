@@ -1,0 +1,25 @@
+#:schema https://mise.en.dev/schema/mise.json
+
+[tools]
+colima = "latest"
+docker-cli = "latest"
+lima = "latest"
+mkcert = "latest"
+shellcheck = "latest"
+task = "latest"
+
+[tools.docker-compose]
+version = "latest"
+postinstall = '''
+mkdir -p ~/.docker/cli-plugins ~/.local/bin
+compose_plugin="$(which docker-cli-plugin-docker-compose)"
+ln -sf "$compose_plugin" ~/.docker/cli-plugins/docker-compose
+ln -sf "$compose_plugin" ~/.local/bin/docker-compose
+'''
+
+[settings]
+disable_backends = ["asdf", "pipx"]
+experimental = true
+
+[hooks]
+enter = "mise install -q"

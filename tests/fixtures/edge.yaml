@@ -1,0 +1,13 @@
+http:
+  routers:
+    edge-smoke:
+      rule: Host(`edge-smoke.localhost`)
+      entryPoints: [websecure]
+      service: edge-backend
+      tls: {}
+
+  services:
+    edge-backend:
+      loadBalancer:
+        servers:
+          - url: http://edge-backend:80
