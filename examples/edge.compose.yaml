@@ -1,0 +1,26 @@
+# Merge this fragment into a project's existing edge-proxy Compose service.
+# Router and service names must be globally unique across the Docker daemon.
+# The broker discovers only containers carrying both traefik.enable=true and
+# local.broker.enable=true.
+
+services:
+  edge:
+    networks:
+      - default
+      - local-broker
+    labels:
+      traefik.enable: "true"
+      local.broker.enable: "true"
+      traefik.docker.network: "local-broker"
+      traefik.tcp.routers.example-edge.rule: >-
+        HostSNI(`app.local.example.test`) ||
+        HostSNI(`docs.local.example.test`)
+      traefik.tcp.routers.example-edge.entrypoints: websecure
+      traefik.tcp.routers.example-edge.tls.passthrough: "true"
+      traefik.tcp.routers.example-edge.service: example-edge
+      traefik.tcp.services.example-edge.loadbalancer.server.port: "443"
+
+networks:
+  local-broker:
+    external: true
+    name: local-broker

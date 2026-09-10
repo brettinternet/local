@@ -1,0 +1,117 @@
+name: ${LOCAL_BROKER_PROJECT_NAME:-local-broker}
+
+services:
+  socket-proxy:
+    image: ${LOCAL_BROKER_SOCKET_PROXY_IMAGE:-lscr.io/linuxserver/socket-proxy:3.4.4-r0-ls97}
+    restart: unless-stopped
+    environment:
+      ALLOW_ARCHIVE: "0"
+      ALLOW_CHANGES: "0"
+      ALLOW_EXPORT: "0"
+      ALLOW_LOGS: "0"
+      ALLOW_PAUSE: "0"
+      ALLOW_RESTARTS: "0"
+      ALLOW_START: "0"
+      ALLOW_STOP: "0"
+      ALLOW_TOP: "0"
+      ALLOW_UNPAUSE: "0"
+      AUTH: "0"
+      BUILD: "0"
+      COMMIT: "0"
+      CONFIGS: "0"
+      CONTAINERS: "1"
+      DISTRIBUTION: "0"
+      EVENTS: "1"
+      EXEC: "0"
+      IMAGES: "0"
+      INFO: "0"
+      NETWORKS: "1"
+      NODES: "0"
+      PING: "1"
+      PLUGINS: "0"
+      POST: "0"
+      SECRETS: "0"
+      SERVICES: "0"
+      SESSION: "0"
+      SWARM: "0"
+      SYSTEM: "0"
+      TASKS: "0"
+      VERSION: "1"
+      VOLUMES: "0"
+    volumes:
+      - ${LOCAL_BROKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    networks: [control]
+    read_only: true
+    tmpfs:
+      - /run
+    healthcheck:
+      test: [CMD-SHELL, "wget -qO- http://127.0.0.1:2375/_ping | grep -q OK"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
+
+  traefik:
+    image: ${LOCAL_BROKER_TRAEFIK_IMAGE:-traefik:v3.7}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --log.level=${LOCAL_BROKER_LOG_LEVEL:-INFO}
+      - --accesslog=${LOCAL_BROKER_ACCESS_LOG:-false}
+      - --api.dashboard=true
+      - --api.insecure=false
+      - --ping=true
+      - --ping.entrypoint=health
+      - --entrypoints.health.address=:8082
+      - --entrypoints.health.http.aliasHeadersStrategy=reject
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.aliasHeadersStrategy=reject
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.aliasHeadersStrategy=reject
+      - --providers.docker=true
+      - --providers.docker.endpoint=tcp://socket-proxy:2375
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=${LOCAL_BROKER_NETWORK:-local-broker}
+      - --providers.docker.constraints=Label(`local.broker.enable`,`true`)
+      - --providers.docker.watch=true
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - ${LOCAL_BROKER_BIND_IP:-127.0.0.1}:${LOCAL_BROKER_HTTP_PORT:-80}:80
+      - ${LOCAL_BROKER_BIND_IP:-127.0.0.1}:${LOCAL_BROKER_HTTPS_PORT:-443}:443
+    volumes:
+      - ./config:/etc/traefik/dynamic:ro
+      - ./certs:/certs:ro
+    networks: [control, ingress]
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - traefik
+        - healthcheck
+        - --ping
+        - --entrypoints.health.address=:8082
+        - --ping.entrypoint=health
+      interval: 5s
+      timeout: 2s
+      retries: 12
+
+networks:
+  control:
+    internal: true
+  ingress:
+    name: ${LOCAL_BROKER_NETWORK:-local-broker}

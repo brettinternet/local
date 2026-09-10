@@ -1,0 +1,11 @@
+# Machine-local configuration
+.env
+config/*
+!config/.gitkeep
+certs/*
+!certs/.gitkeep
+
+# Local runtime and editor files
+.test-runtime/
+.DS_Store
+*.log

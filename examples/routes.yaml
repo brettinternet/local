@@ -1,0 +1,23 @@
+# Copy this file to config/routes.yaml and replace the reserved example names.
+# Files under config/ are intentionally ignored because they describe one
+# developer's machines, projects, ports, and exposure policy.
+
+tls:
+  certificates:
+    - certFile: /certs/local.pem
+      keyFile: /certs/local-key.pem
+
+http:
+  routers:
+    example-app:
+      rule: Host(`app.local.example.test`)
+      entryPoints: [websecure]
+      service: example-app
+      tls: {}
+
+  services:
+    example-app:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://host.docker.internal:3000

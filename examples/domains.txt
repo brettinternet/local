@@ -1,0 +1,7 @@
+# Copy to certs/domains.txt, then replace these reserved example names.
+# One mkcert name per line. Blank lines and comments are ignored.
+app.local.example.test
+*.local.example.test
+localhost
+127.0.0.1
+::1
