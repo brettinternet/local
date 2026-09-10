@@ -19,7 +19,9 @@ cleanup() {
   docker compose --project-name "$fixture_test_project" --file "$fixture_compose_file" down >/dev/null 2>&1 || true
   docker compose --project-name "$broker_test_project" --file "$repository_root/compose.yaml" down >/dev/null 2>&1 || true
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 probe_https() {
   local probe_host="$1"
@@ -33,6 +35,7 @@ probe_https() {
         --silent \
         --show-error \
         --insecure \
+        --noproxy '*' \
         --resolve "$probe_host:$probe_port:127.0.0.1" \
         "https://$probe_host:$probe_port/" 2>/dev/null
     )" && grep -q '^Hostname:' <<<"$probe_output"; then
@@ -89,6 +92,7 @@ redirect_status="$(
     --silent \
     --output /dev/null \
     --write-out '%{http_code}' \
+    --noproxy '*' \
     --resolve "direct-smoke.localhost:$broker_http_port:127.0.0.1" \
     "http://direct-smoke.localhost:$broker_http_port/"
 )"

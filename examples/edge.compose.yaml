@@ -5,6 +5,10 @@
 
 services:
   edge:
+    # Required when this edge also uses Traefik's Docker provider. Apply the
+    # matching local.stack label to its own downstream services, not this edge.
+    environment:
+      TRAEFIK_PROVIDERS_DOCKER_CONSTRAINTS: "Label(`local.stack`,`example-environment`)"
     networks:
       - default
       - local-broker

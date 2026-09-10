@@ -71,6 +71,8 @@ Never commit a local CA private key. `mkcert` keeps its root key outside this re
 
 `examples/routes.yaml` shows a file-provider route from `https://app.local.example.test` to a process on host port 3000. The broker supplies `host.docker.internal` on Docker Desktop and Linux Docker Engine.
 
+The process must listen on an interface reachable from the Docker VM or bridge. Docker Desktop and Colima provide host forwarding, but on native Linux a process bound only to host `127.0.0.1` is not reachable through the bridge gateway. Prefer direct Docker registration, or deliberately bind the process to a reachable host interface and protect it with the host firewall.
+
 Copy the example into `config/`, update its hostname and upstream, generate a matching certificate, and ensure the hostname resolves to `127.0.0.1`.
 
 Traefik watches `config/`; an atomic file replacement updates routes without restarting the broker.
@@ -81,7 +83,7 @@ For a minimally disruptive migration, an existing project-level Traefik can rema
 
 See `examples/edge.compose.yaml` for the network and labels. Each downstream environment must use globally unique router/service names, normally derived from a stable environment ID.
 
-A downstream Traefik that also watches the Docker daemon **must constrain its own Docker provider** to labels belonging to that environment. Otherwise it can consume the broker-facing labels on itself or another edge and create recursive or cross-environment routes. A typical per-environment constraint is:
+A downstream Traefik that also watches the Docker daemon **must constrain its own Docker provider** to labels belonging to that environment. Otherwise it can consume the broker-facing labels on itself or another edge and create recursive or cross-environment routes. The example sets the constraint through `TRAEFIK_PROVIDERS_DOCKER_CONSTRAINTS`; if the existing edge configures the same setting on its command line, update that command-line value instead. A typical per-environment constraint is:
 
 ```text
 --providers.docker.constraints=Label(`local.stack`,`example-environment-id`)
