@@ -1,5 +1,12 @@
 #:schema https://mise.en.dev/schema/mise.json
 
+[hooks]
+enter = [
+  { shell = "bash", script = "command -v hum >/dev/null && source <(hum completion bash)" },
+  { shell = "zsh", script = "command -v hum >/dev/null && source <(hum completion zsh)" },
+  { shell = "fish", script = "type -q hum; and hum completion fish | source" },
+]
+
 [tools]
 colima = "latest"
 docker-cli = "latest"
@@ -7,6 +14,7 @@ lima = "latest"
 mkcert = "latest"
 shellcheck = "latest"
 task = "latest"
+"github:brettinternet/hum" = "latest"
 
 [tools.docker-compose]
 version = "latest"
@@ -20,6 +28,3 @@ ln -sf "$compose_plugin" ~/.local/bin/docker-compose
 [settings]
 disable_backends = ["asdf", "pipx"]
 experimental = true
-
-[hooks]
-enter = "mise install -q"
