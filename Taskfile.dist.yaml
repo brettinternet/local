@@ -91,6 +91,10 @@ tasks:
     cmds:
       - ./scripts/smoke.sh
 
+  fix:
+    desc: Apply all automatic formatting fixes
+    cmd: mise exec prettier -- prettier --write .
+
   check:staged:
     desc: Check staged formatting and secrets
     aliases: [check-staged]
