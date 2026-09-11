@@ -53,7 +53,7 @@ The safe default binds ports 80 and 443 to loopback:
 LOCAL_BROKER_BIND_IP=127.0.0.1
 ```
 
-Binding to `0.0.0.0` exposes registered routes to reachable network clients. Pair it with host firewall and route-level access controls.
+Binding to `0.0.0.0` exposes registered routes to reachable network clients. See [LAN access](docs/lan-access.md) for binding, DNS, certificate trust, and firewall requirements.
 
 Stop the broker with:
 
@@ -93,6 +93,7 @@ Never commit a local CA private key. `mkcert` stores its root key outside this r
 
 - [Project setup](docs/project-setup.md) — direct routes, edge passthrough, and host processes
 - [Project practices](docs/practices.md) — identity, ports, data, TLS, exposure, and lifecycle
+- [LAN access](docs/lan-access.md) — DNS, device trust, firewall, and remote agents
 - [Migration checklist](docs/migration.md) — move an existing stack without changing behavior
 
 ## Route a host process
