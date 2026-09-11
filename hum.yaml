@@ -1,7 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/brettinternet/hum/main/hum.schema.json
 version: 1
 processes:
   broker:
     argv: [task, "broker:serve"]
     ready:
-      match: "Local broker ready\\."
+      exec:
+        [
+          docker,
+          compose,
+          exec,
+          -T,
+          traefik,
+          traefik,
+          healthcheck,
+          --ping,
+          "--entrypoints.health.address=:8082",
+          "--ping.entrypoint=health",
+        ]
+      interval: 1s
       timeout: 2m
