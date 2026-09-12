@@ -17,7 +17,7 @@ mkcert = "latest"
 prettier = "latest"
 shellcheck = "latest"
 task = "latest"
-"github:brettinternet/hum" = "0.9.1"
+"github:brettinternet/hum" = "latest"
 
 [tools.docker-compose]
 version = "latest"
