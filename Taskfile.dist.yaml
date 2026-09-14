@@ -51,7 +51,7 @@ tasks:
 
   broker:serve:
     desc: Run the broker in the foreground for Hum
-    deps: [validate]
+    deps: [docker:start, validate]
     cmd: |
       bash -c '
         set -eu

@@ -33,12 +33,11 @@ Override image values in `.env`.
 mise trust
 mise install
 task init
-task docker:start # only when a Docker daemon is not already running
 task up
 task status
 ```
 
-`task up` starts the broker under Hum for supervision.
+`task up` starts the broker under Hum for supervision. It starts Colima automatically when no Docker daemon is available.
 
 ```sh
 hum status
