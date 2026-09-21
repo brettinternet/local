@@ -46,8 +46,8 @@ tasks:
         LOCAL_BROKER_TEST_NETWORK=local-broker-validation
         LOCAL_BROKER_TEST_ID=local-broker-validation
         docker compose --file tests/fixtures/compose.yaml config --quiet
-      - bash -n scripts/generate-cert.sh scripts/smoke.sh
-      - shellcheck scripts/generate-cert.sh scripts/smoke.sh
+      - bash -n scripts/generate-cert.sh scripts/share.sh scripts/smoke.sh
+      - shellcheck scripts/generate-cert.sh scripts/share.sh scripts/smoke.sh
 
   broker:serve:
     desc: Run the broker in the foreground for Hum
@@ -85,6 +85,15 @@ tasks:
     desc: Follow broker logs
     cmds:
       - docker compose logs --follow traefik socket-proxy
+
+  share:
+    desc: Temporarily share one HTTP(S) route through a Cloudflare Quick Tunnel
+    dotenv: [.env]
+    requires:
+      vars: [HOST]
+    env:
+      LOCAL_BROKER_SHARE_HOST: "{{.HOST}}"
+    cmd: ./scripts/share.sh
 
   smoke:
     desc: Exercise direct HTTPS discovery and TLS passthrough in an isolated broker

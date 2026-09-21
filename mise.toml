@@ -8,6 +8,7 @@ enter = [
 ]
 
 [tools]
+cloudflared = "latest"
 colima = "latest"
 docker-cli = "latest"
 lima = "latest"

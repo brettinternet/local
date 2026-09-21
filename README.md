@@ -16,7 +16,7 @@ Machine-specific routes, domains, certificates, socket paths, ports, and bind se
 
 - [mise](https://mise.jdx.dev/)
 
-`mise.toml` installs Task, Hum, Lefthook, Gitleaks, Prettier, Lima, Colima, the Docker CLI, the Docker Compose plugin, mkcert, and ShellCheck. This is the supported setup, but existing Docker Desktop and native Docker daemons also work.
+`mise.toml` installs Task, Hum, cloudflared, Lefthook, Gitleaks, Prettier, Lima, Colima, the Docker CLI, the Docker Compose plugin, mkcert, and ShellCheck. This is the supported setup, but existing Docker Desktop and native Docker daemons also work.
 
 Default images:
 
@@ -93,6 +93,7 @@ Never commit a local CA private key. `mkcert` stores its root key outside this r
 - [Project setup](docs/project-setup.md) — direct routes, edge passthrough, and host processes
 - [Project practices](docs/practices.md) — identity, ports, data, TLS, exposure, and lifecycle
 - [LAN access](docs/lan-access.md) — DNS, device trust, firewall, and remote agents
+- [Remote sharing](docs/remote-sharing.md) — temporarily publish one route with a Cloudflare Quick Tunnel
 - [Migration checklist](docs/migration.md) — move an existing stack without changing behavior
 
 ## Route a host process
